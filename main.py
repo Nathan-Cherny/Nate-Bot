@@ -3,10 +3,13 @@ from discord.ext import commands
 import json
 from dotenv import load_dotenv
 import os
+import requests
+import random
 
 load_dotenv()
 
 KEY = os.getenv('API_KEY')
+tenorKey = os.getenv("TENOR_KEY")
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -51,6 +54,7 @@ async def on_message(message):
     if testIfCursed(message.author):
         await message.add_reaction("🤡")
         await message.delete()
+        return
     if 'fish' not in message.content.lower() and message.channel.name == 'fish':
         await message.channel.send(f"{message.author.mention} YOU DIDNT HAVE FISH. {message.author.name} IS BANNED.")
         await message.author.ban(reason="FISH.")
@@ -59,6 +63,13 @@ async def on_message(message):
 
 @bot.command()
 async def curse(ctx, *, user: discord.Member):
+
+    if user.id == 1182734770736746656:
+        await ctx.send(f"Fuck you {ctx.author.mention}, you can't curse me.")
+        await ctx.send(f"!curse {ctx.author.mention}")
+        JSON.updateUserData(user.id, "cursed", True)
+        await ctx.send(f"{ctx.author.mention} is cursed. Anything they say will be immediately deleted.")
+        return
 
     data = JSON.readJson('userData.json')
     if str(user.id) not in data:
@@ -69,22 +80,34 @@ async def curse(ctx, *, user: discord.Member):
 
 @bot.command()
 async def uncurse(ctx, *, user: discord.Member):
-    
+    if user.id == ctx.author.id:
+        return
+
     data = JSON.readJson('userData.json')
     if str(user.id) not in data:
         JSON.createUserProfileInJson(user)
     JSON.updateUserData(user.id, "cursed", False)
 
-    await ctx.send(f"{user.mention} is cursed. Anything they say will be immediately deleted.")
+    await ctx.send(f"{user.mention} is uncursed. You are free from your shackles.")
 
 @bot.command()
-async def ban(ctx, *, user: discord.Member):
-    await user.ban(reason="FISH.")
+async def randomGif(ctx):
+    string = ""
+    length = 8
+
+    for _ in range(length):
+        string += chr(random.randint(0, 255))
+
+    request = requests.get(f"https://tenor.googleapis.com/v2/search?q={string}&key={tenorKey}&client_key=my_test_app&limit=1").json()
+    url = request["results"][0]["media_formats"]["tinygif"]["url"]
+
+    await ctx.send(url)
 
 def testIfCursed(user):
     data = JSON.readJson('userData.json')
     if data[str(user.id)]['cursed']:
         return True
     return False
+
 
 bot.run(KEY)

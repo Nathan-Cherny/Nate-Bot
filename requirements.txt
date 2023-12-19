@@ -7,3 +7,4 @@ idna==3.6
 multidict==6.0.4
 python-dotenv==1.0.0
 yarl==1.9.4
+requests==2.31.0
