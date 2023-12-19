@@ -8,8 +8,6 @@ load_dotenv()
 
 KEY = os.getenv('API_KEY')
 
-print(KEY)
-
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
@@ -61,12 +59,21 @@ async def on_message(message):
 
 @bot.command()
 async def curse(ctx, *, user: discord.Member):
-    userId = user.id
 
     data = JSON.readJson('userData.json')
     if str(user.id) not in data:
         JSON.createUserProfileInJson(user)
     JSON.updateUserData(user.id, "cursed", True)
+
+    await ctx.send(f"{user.mention} is cursed. Anything they say will be immediately deleted.")
+
+@bot.command()
+async def uncurse(ctx, *, user: discord.Member):
+    
+    data = JSON.readJson('userData.json')
+    if str(user.id) not in data:
+        JSON.createUserProfileInJson(user)
+    JSON.updateUserData(user.id, "cursed", False)
 
     await ctx.send(f"{user.mention} is cursed. Anything they say will be immediately deleted.")
 
